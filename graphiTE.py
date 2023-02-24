@@ -2,31 +2,56 @@ class Node:
     def __init__(self, name):
         self.name = name
         self.size = 0
-        self.parent = name
+        self.parent = self
+        self.repeats = set()
+        self.children = set()
+        self.overlappedRepeats = {}
 
     def __repr__(self):
-        return f"{self.name} Size {self.size}"
+        # represent object as gene name and size
+        return f"{self.name} Size {self.size} Children {len(self.children)}"
 
-def union_by_size(node1, node2):
-    root1 = find(node1)
-    root2 = find(node2)
+    def intersect(self, node):
+        """
+        return boolean if two nodes have intersecting repeats
+        """
+        return len(self.repeats.intersection(node.repeats)) > 0
 
-    if root1 != root2:
-        # update parent node to gene with most connections
-        if root1.size < root2.size:
-            root1.parent = root2
-        else:
-            root2.parent = root1
+    def findOverlap(self, node):
+        """
+        find the overlapping repeats between one node and another
+        """
 
-def find(node):
-    if node.parent == node.name:
-        return node
-    node.parent = find(node.parent)
+        if node in self.overlappedRepeats:
+            return
 
-    return node.parent
+        intersectSet = self.repeats.intersection(node.repeats)
+
+        self.overlappedRepeats[node] = intersectSet
+        node.overlappedRepeats[self] = intersectSet
+
+def mergeNodes(node1, node2):
+    """
+    merge two nodes, setting the parent to be the one with the most amount of repeats
+    """
+
+    parent, child = (node1, node2) if len(node1.repeats) >= len(node2.repeats) else (node2, node1)
+
+    # reassign child's parent
+    child.parent = parent
+
+    # add child to parent's children
+    parent.children.add(child)
+
+    # union the repeats -> parent now has the child's repeats too
+    parent.repeats = parent.repeats.union(child.repeats)
+
+    return parent
+
 
 def main():
     file = open('graphite_data.csv')
+    # skip header
     file.readline()
 
     # initialize adjacency list and mapping dictionary
@@ -47,35 +72,47 @@ def main():
         gene_name = line[0]
         repeat = line[3]
 
-        # map new gene to new gene object
-        # (otherwise, will create new object for every instance of gene)
         if gene_name not in gene_map:
             gene = Node(gene_name)
             gene_map[gene_name] = gene
 
-        # get gene object
         gene = gene_map[gene_name]
-
-        # create adjacency list
-        if repeat not in adj_list:
-            adj_list[repeat] = set()
-
-        adj_list[repeat].add(gene)
+        gene.repeats.add(repeat)
 
         # count connections
         gene.size += 1
 
         count += 1
 
-    # union all nodes with the same repeat
-    for nodes in adj_list.values():
-        nodes = list(nodes)
-        for i in range(1, len(nodes)):
-            union_by_size(nodes[i], nodes[i - 1])
+    # create a set of genes
+    geneSet = set(gene_map.values())
 
-    # print the final parent of each node
-    for gene in gene_map.values():
-        if gene.name == find(gene).name:
-            print(f"{gene.name} is the parent")
+    # pop a random gene and set as current parent
+    parent = geneSet.pop()
+
+    # variable to ensure we don't loop forever if we can't add any gene from the set
+    foundIntersectCycle = True
+
+    # while there are genes to add & we haven't done a cycle through the set where we didn't intersect any genes
+    while len(geneSet) > 0 and foundIntersectCycle:
+        foundIntersectCycle = False
+
+        # create set of merged genes to remove after loop
+        removeSet = set()
+
+        # iterate through set, compare each gene to the parent gene -> if they intersect -> merge them together
+        for setItem in geneSet:
+            if parent.intersect(setItem):
+                parent.findOverlap(setItem)
+                parent = mergeNodes(parent, setItem)
+                removeSet.add(setItem)
+
+                # continue
+                foundIntersectCycle = True
+
+        # remove added genes
+        geneSet = geneSet.difference(removeSet)
+
+    print(parent)
 
 main()
