@@ -50,7 +50,7 @@ def mergeNodes(node1, node2):
 
 
 def main():
-    file = open('graphite_data.csv')
+    file = open('data/filt_data.csv')
     # skip header
     file.readline()
 
@@ -63,8 +63,8 @@ def main():
     for lines in file.readlines():
 
         # change sample size here
-        if count == 95000:
-            break
+	#if count == 95000:
+	    #break
 
         # parse csv
         line = lines.split(',')
@@ -89,6 +89,7 @@ def main():
 
     # pop a random gene and set as current parent
     parent = geneSet.pop()
+    #print(parent)
 
     # variable to ensure we don't loop forever if we can't add any gene from the set
     foundIntersectCycle = True
@@ -102,6 +103,7 @@ def main():
 
         # iterate through set, compare each gene to the parent gene -> if they intersect -> merge them together
         for setItem in geneSet:
+            print(parent)
             if parent.intersect(setItem):
                 parent.findOverlap(setItem)
                 parent = mergeNodes(parent, setItem)
@@ -113,6 +115,36 @@ def main():
         # remove added genes
         geneSet = geneSet.difference(removeSet)
 
+    print(parent.overlappedRepeats)
     print(parent)
 
 main()
+
+'''
+source | target | edge | weight
+
+LINC1  | LINC6  | AluS | NaN
+
+LINC3  | LINC2  | AluS | NaN
+
+.....
+
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
