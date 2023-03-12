@@ -6,10 +6,11 @@ class Node:
         self.repeats = set()
         self.children = set()
         self.overlappedRepeats = {}
+        self.maxDepth = 0
 
     def __repr__(self):
-        # represent object as gene name and size
-        return f"{self.name} Size {self.size} Children {len(self.children)}"
+        # represent object as gene name
+        return f"{self.name}"
 
     def intersect(self, node):
         """
@@ -27,35 +28,37 @@ class Node:
 
         intersectSet = self.repeats.intersection(node.repeats)
 
-        self.overlappedRepeats[node] = intersectSet
-        node.overlappedRepeats[self] = intersectSet
+        self.overlappedRepeats[node] = intersectSet             # for node1 ->  new gene2 : intersecting repeats
+        node.overlappedRepeats[self] = intersectSet             # for node2 -> new gene1 : intersecting repeats
 
-def mergeNodes(node1, node2):
+def findParent(node1, node2):
     """
     merge two nodes, setting the parent to be the one with the most amount of repeats
     """
+    # edge case
+    if node1 == node2:
+        return node1
 
+    # set parent and child based on number of repeats
     parent, child = (node1, node2) if len(node1.repeats) >= len(node2.repeats) else (node2, node1)
 
     # reassign child's parent
     child.parent = parent
 
+    # which has the greatest path? (level of descendants)
+    parent.maxDepth = max(parent.maxDepth, child.maxDepth + 1)
+
     # add child to parent's children
     parent.children.add(child)
 
-    # union the repeats -> parent now has the child's repeats too
-    parent.repeats = parent.repeats.union(child.repeats)
-
     return parent
 
-
 def main():
-    file = open('graphite_data.csv')
+    file = open('filt_data.csv')
     # skip header
     file.readline()
 
     # initialize adjacency list and mapping dictionary
-    adj_list = {}
     gene_map = {}
 
     count = 0
@@ -85,34 +88,46 @@ def main():
         count += 1
 
     # create a set of genes
-    geneSet = set(gene_map.values())
+    geneList = set(gene_map.values())
 
-    # pop a random gene and set as current parent
-    parent = geneSet.pop()
+    # start at gene with the least amount of repeats
+    geneList = sorted(geneList, key=lambda x: len(x.repeats))
+
+    # make parent first gene in list ^
+    parent = geneList[0]
 
     # variable to ensure we don't loop forever if we can't add any gene from the set
     foundIntersectCycle = True
 
     # while there are genes to add & we haven't done a cycle through the set where we didn't intersect any genes
-    while len(geneSet) > 0 and foundIntersectCycle:
+    while len(geneList) > 0 and foundIntersectCycle:
         foundIntersectCycle = False
 
         # create set of merged genes to remove after loop
-        removeSet = set()
+        removeList = []
 
         # iterate through set, compare each gene to the parent gene -> if they intersect -> merge them together
-        for setItem in geneSet:
+        for setItem in geneList:
             if parent.intersect(setItem):
                 parent.findOverlap(setItem)
-                parent = mergeNodes(parent, setItem)
-                removeSet.add(setItem)
+                parent = findParent(parent, setItem)
+                removeList.append(setItem)
 
                 # continue
                 foundIntersectCycle = True
+                break
 
         # remove added genes
-        geneSet = geneSet.difference(removeSet)
+        for i in removeList:
+            geneList.remove(i)
 
-    print(parent)
+    # tabular format
+    table = []
+
+    for node in parent.overlappedRepeats.keys():
+        for edge in parent.overlappedRepeats[node]:
+            table.append([parent.name, node.name, edge])
+
+    return table, parent
 
 main()
