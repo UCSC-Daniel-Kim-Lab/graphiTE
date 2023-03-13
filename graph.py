@@ -36,7 +36,7 @@ def findPositions(parent):
             node = children.pop(0)
 
             # go left when (-), go right when (+)
-            plotX = coordinates[node.parent][0] + (modify * x_dist)
+            plotX = coordinates[node.parent][0] + ((modify * x_dist) * ((i // 2) + 1))
 
             # add new position to dictionary
             coordinates[node] = np.array([plotX, currY])
