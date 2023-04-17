@@ -4,20 +4,20 @@ import numpy as np
 # load csv file in df
 data = pd.read_csv('/Users/queenie1/Desktop/kimlab/data/graphiTE_shuf100_test.csv')
 
-# get rid of duplicates
-genes = data['name2'].unique()
-repeats = data['repName'].unique()
-classifications = data['classification'].unique()
+# get gene, repeat, and classification
+genes = data['name2']
+repeats = data['repName']
+classifications = data['classification']
 
 # create 3D numpy array initialized with zeros
-array_3d = np.zeros((len(genes), len(repeats), len(classifications)), dtype=float)
+array_3d = np.zeros((len(genes), len(repeats), len(classifications)), dtype=int)
 
 # loop through the rows of the data and fill the array with 1s where there's a match
 for index, row in data.iterrows():
     gene_index = np.where(genes == row['name2'])[0][0]
     repeat_index = np.where(repeats == row['repName'])[0][0]
     classification_index = np.where(classifications == row['classification'])[0][0]
-    array_3d[gene_index, repeat_index, classification_index] = 1
+    array_3d[gene_index, repeat_index, classification_index] += 1
 
 def compare(gene):
 
@@ -35,7 +35,7 @@ def compare(gene):
                 if gene_pos == gene_row or array_3d[gene_pos][TE][classification] == 0:
                     continue
                 # add index to neighbors set
-                if array_3d[gene_row][TE][classification] == 1:
+                if array_3d[gene_row][TE][classification] > 0:
                     neighbors.add(gene_row)
 
     return neighbors
