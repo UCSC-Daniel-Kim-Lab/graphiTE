@@ -7,17 +7,17 @@ data = pd.read_csv('/Users/queenie1/Desktop/kimlab/data/graphiTE_shuf100_test.cs
 # get rid of duplicates
 genes = data['name2'].unique()
 repeats = data['repName'].unique()
-# classifications = data['classification'].unique()
+classifications = data['classification'].unique()
 
 # create 3D numpy array initialized with zeros
-array_3d = np.full((len(genes), len(repeats)), 0)
+array_3d = np.zeros((len(genes), len(repeats), len(classifications)), dtype=float)
 
 # loop through the rows of the data and fill the array with 1s where there's a match
 for index, row in data.iterrows():
     gene_index = np.where(genes == row['name2'])[0][0]
     repeat_index = np.where(repeats == row['repName'])[0][0]
-    # classification_index = np.where(classifications == row['classification'])[0][0]
-    array_3d[gene_index, repeat_index] = 1
+    classification_index = np.where(classifications == row['classification'])[0][0]
+    array_3d[gene_index, repeat_index, classification_index] = 1
 
 def compare(gene):
 
@@ -30,12 +30,13 @@ def compare(gene):
     # loop by columns, rows
     for TE in range(len(repeats)):
         for gene_row in range(len(genes)):
-            # make sure we only do meaningful comparisons
-            if gene_pos == gene_row or array_3d[gene_pos][TE] == 0:
-                continue
-            # add index to neighbors set
-            if array_3d[gene_row][TE] == 1:
-                neighbors.add(gene_row)
+            for classification in range(len(classifications)):
+                # make sure we only do meaningful comparisons
+                if gene_pos == gene_row or array_3d[gene_pos][TE][classification] == 0:
+                    continue
+                # add index to neighbors set
+                if array_3d[gene_row][TE][classification] == 1:
+                    neighbors.add(gene_row)
 
     return neighbors
 
