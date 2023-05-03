@@ -65,6 +65,33 @@ class Graph:
 
         return neighbors
 
+    def disjointSet(self):
+        # create instance of disjoint set class
+        self.disjoint = disjointSets(self.gene_obj)
+
+        # iterate over indexes of genes
+        for gene in range(len(self.gene_obj)):
+            # print
+            if len(self.gene_obj[gene].neighbors) > 0:
+                print('{} {}'.format(gene, self.gene_obj[gene]))
+            # call union_find on gene index, and neighbor indexes
+            for neighbor in self.gene_obj[gene].neighbors:
+                self.disjoint.union(gene, neighbor)
+
+    def createParentSets(self):
+        # [roots] rep all gene_obj
+        # node @ graph.gene_obj[0] has parent at index roots[0]
+        self.subsets = [set() for _ in range(len(self.gene_obj))]
+
+        # add all children of a parent node to the subset list @ the parent nodes index
+        for i in range(len(self.disjoint.roots)):
+            self.subsets[self.disjoint.roots[i]].add(i)
+
+        # filter out any empty sets or nodes where the subset is 1
+        print(list(filter(lambda x: len(x) > 1, self.subsets)))
+
+    def store_trees(self):
+        self.trees = [(self.disjoint.roots[i], self.disjoint.ranks[i]) for i in range(len(self.gene_obj))]
 
 
 class Gene:
@@ -113,6 +140,8 @@ class disjointSets:
         return False
 
 
+
+
 def main():
     graph = Graph()
 
@@ -124,28 +153,12 @@ def main():
     # compare nodes
     graph.compareAll()
 
-    disjoint = disjointSets(graph.gene_obj)
-
-    # [roots] rep all gene_obj
-    # node @ graph.gene_obj[0] has parent at index roots[0]
-    subsets = [set() for _ in range(len(graph.gene_obj))]
-
-    # iterate over indexes of genes
-    for gene in range(len(graph.gene_obj)):
-        # print
-        if len(graph.gene_obj[gene].neighbors) > 0:
-            print('{} {}'.format(gene, graph.gene_obj[gene]))
-        # call union_find on gene index, and neighbor indexes
-        for neighbor in graph.gene_obj[gene].neighbors:
-            disjoint.union(gene, neighbor)
-
-    # add all children of a parent node to the subset list @ the parent nodes index
-    for i in range(len(disjoint.roots)):
-        subsets[disjoint.roots[i]].add(i)
-
+    graph.disjointSet()
+    graph.createParentSets()
     print()
-    # filter out any empty sets or nodes where the subset is 1
-    print(list(filter(lambda x: len(x) > 1, subsets)))
+    graph.store_trees()
+    print(graph.trees)
+
 
 main()
 
