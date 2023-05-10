@@ -72,8 +72,8 @@ class Graph:
         # iterate over indexes of genes
         for gene in range(len(self.gene_obj)):
             # print
-            if len(self.gene_obj[gene].neighbors) > 0:
-                print('{} {}'.format(gene, self.gene_obj[gene]))
+            # if len(self.gene_obj[gene].neighbors) > 0:
+                # print('{} {}'.format(gene, self.gene_obj[gene]))
             # call union_find on gene index, and neighbor indexes
             for neighbor in self.gene_obj[gene].neighbors:
                 self.disjoint.union(gene, neighbor)
@@ -88,11 +88,19 @@ class Graph:
             self.subsets[self.disjoint.roots[i]].add(i)
 
         # filter out any empty sets or nodes where the subset is 1
-        print(list(filter(lambda x: len(x) > 1, self.subsets)))
+        # print(list(filter(lambda x: len(x) > 0, self.subsets)))
 
     def store_trees(self):
         self.trees = [(self.disjoint.roots[i], self.disjoint.ranks[i]) for i in range(len(self.gene_obj))]
 
+    def print(self, fileName):
+        file = open(fileName, 'w')
+        for parent in range(len(self.subsets)):
+            neighborhood = self.subsets[parent]
+            if len(neighborhood) > 0:
+                children = neighborhood.copy()
+                children.remove(parent)
+                file.write("{} | {} | {} \n".format(parent, children, len(neighborhood)))
 
 class Gene:
 
@@ -140,8 +148,6 @@ class disjointSets:
         return False
 
 
-
-
 def main():
     graph = Graph()
 
@@ -155,9 +161,10 @@ def main():
 
     graph.disjointSet()
     graph.createParentSets()
-    print()
+    graph.print("test.txt")
+    # print()
     graph.store_trees()
-    print(graph.trees)
+    # print(graph.trees)
 
 
 main()
