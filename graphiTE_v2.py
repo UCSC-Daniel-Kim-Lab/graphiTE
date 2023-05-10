@@ -19,11 +19,11 @@ for index, row in data.iterrows():
     classification_index = np.where(classifications == row['classification'])[0][0]
     array_3d[gene_index, repeat_index, classification_index] += 1
 
-
 class Graph:
 
-    def __init__(self):
+    def __init__(self, threshold=1):
         self.gene_obj = []
+        self.threshold = threshold
 
     def add_node(self, node):
         """ add node to gene_obj list """
@@ -90,17 +90,16 @@ class Graph:
         # filter out any empty sets or nodes where the subset is 1
         # print(list(filter(lambda x: len(x) > 0, self.subsets)))
 
-    def store_trees(self):
-        self.trees = [(self.disjoint.roots[i], self.disjoint.ranks[i]) for i in range(len(self.gene_obj))]
+    # def store_trees(self):
+    #     self.trees = [(self.disjoint.roots[i], self.disjoint.ranks[i]) for i in range(len(self.gene_obj))]
 
     def print(self, fileName):
+        """ write output to txt file """
         file = open(fileName, 'w')
         for parent in range(len(self.subsets)):
             neighborhood = self.subsets[parent]
-            if len(neighborhood) > 0:
-                children = neighborhood.copy()
-                children.remove(parent)
-                file.write("{} | {} | {} \n".format(parent, children, len(neighborhood)))
+            if len(neighborhood) >= self.threshold:
+                file.write("{} \t {} \t {} \n".format(parent, neighborhood, len(neighborhood)))
 
 class Gene:
 
@@ -147,8 +146,8 @@ class disjointSets:
             self.ranks[root_right] += 1
         return False
 
-
 def main():
+    # pass threshold here
     graph = Graph()
 
     # create gene nodes for each gene and add to Graph object
@@ -162,10 +161,7 @@ def main():
     graph.disjointSet()
     graph.createParentSets()
     graph.print("test.txt")
-    # print()
-    graph.store_trees()
-    # print(graph.trees)
-
+    # graph.store_trees()
 
 main()
 
