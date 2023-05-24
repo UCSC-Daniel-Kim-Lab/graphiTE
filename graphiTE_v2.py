@@ -1,8 +1,21 @@
 import pandas as pd
 import numpy as np
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-i', '--csv_file')
+parser.add_argument('-t', '--threshold')
+parser.add_argument('-o', '--output_file')
+
+args = parser.parse_args()
+
+csvFile = args.csv_file
+threshold = args.threshold
+outFile = args.output_file
 
 # load csv file in df
-data = pd.read_csv('/Users/queenie1/Desktop/kimlab/data/graphiTE_shuf100_test.csv')
+data = pd.read_csv(csvFile)
 
 # get gene, repeat, and classification
 genes = data['name2'].unique()
@@ -32,24 +45,23 @@ class Graph:
     def compareAll(self):
         """ call compare() on all nodes comparing to every other nodes """
         # iterate through list of gene nodes by index
-        for i in range(len(self.gene_obj)):
+        size = len(self.gene_obj)
+        for i in range(size):
+            if i % int((.1 * size)) == 0:
+                print("Finished gene {}".format(i))
             # find the gene at index i
             gene = self.gene_obj[i]
             # update gene's neighbors with new neighbors from compare()
-            gene.neighbors.update(self.compare(gene.gene_name))
+            gene.neighbors.update(self.compare(i))
 
-    def compare(self, gene):
+    def compare(self, gene_pos):
         """ compare node to every other node, skipping nodes that have been compared """
-
-        # get position of gene
-        gene_pos = np.where(genes == gene)[0][0]
-
         # initialize empty set to store neighbors
         neighbors = set()
 
         # loop by columns, rows
         for TE in range(len(repeats)):
-            for gene_row in range(len(genes)):
+            for gene_row in range(gene_pos, len(genes)):
                 # check if current rows neighbor contains the gene we're looking at
                 if gene_pos in self.gene_obj[gene_row].neighbors:
                     continue
@@ -71,9 +83,6 @@ class Graph:
 
         # iterate over indexes of genes
         for gene in range(len(self.gene_obj)):
-            # print
-            # if len(self.gene_obj[gene].neighbors) > 0:
-                # print('{} {}'.format(gene, self.gene_obj[gene]))
             # call union_find on gene index, and neighbor indexes
             for neighbor in self.gene_obj[gene].neighbors:
                 self.disjoint.union(gene, neighbor)
@@ -87,19 +96,12 @@ class Graph:
         for i in range(len(self.disjoint.roots)):
             self.subsets[self.disjoint.roots[i]].add(i)
 
-        # filter out any empty sets or nodes where the subset is 1
-        # print(list(filter(lambda x: len(x) > 0, self.subsets)))
-
-    # def store_trees(self):
-    #     self.trees = [(self.disjoint.roots[i], self.disjoint.ranks[i]) for i in range(len(self.gene_obj))]
-
     def print(self, fileName):
         """ write output to txt file """
         file = open(fileName, 'w')
         for parent in range(len(self.subsets)):
             neighborhood = self.subsets[parent]
-            if len(neighborhood) >= self.threshold:
-                file.write("{} \t {} \t {} \n".format(parent, neighborhood, len(neighborhood)))
+            file.write("{} \t {} \t {} \n".format(parent, neighborhood, len(neighborhood)))
 
 class Gene:
 
@@ -160,8 +162,7 @@ def main():
 
     graph.disjointSet()
     graph.createParentSets()
-    graph.print("test.txt")
-    # graph.store_trees()
+    graph.print(outFile)
 
 main()
 
