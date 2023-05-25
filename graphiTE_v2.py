@@ -46,36 +46,22 @@ class Graph:
         """ call compare() on all nodes comparing to every other nodes """
         # iterate through list of gene nodes by index
         size = len(self.gene_obj)
-        for i in range(size):
-            if i % int((.1 * size)) == 0:
-                print("Finished gene {}".format(i))
+        for curr_gene in range(size):
+            if curr_gene % int((.1 * size)) == 0:
+                print("Compared {} genes".format(curr_gene))
             # find the gene at index i
-            gene = self.gene_obj[i]
-            # update gene's neighbors with new neighbors from compare()
-            gene.neighbors.update(self.compare(i))
+            for compare_gene in range(curr_gene, size):
+                self.compare(curr_gene, compare_gene)
 
-    def compare(self, gene_pos):
-        """ compare node to every other node, skipping nodes that have been compared """
-        # initialize empty set to store neighbors
-        neighbors = set()
-
-        # loop by columns, rows
+    def compare(self, curr_gene, compare_gene):
+        """ compare node to every other node"""
         for TE in range(len(repeats)):
-            for gene_row in range(gene_pos, len(genes)):
-                # check if current rows neighbor contains the gene we're looking at
-                if gene_pos in self.gene_obj[gene_row].neighbors:
-                    continue
-                for classification in range(len(classifications)):
-                    # make sure we only do meaningful comparisons
-                    if gene_pos == gene_row or array_3d[gene_pos][TE][classification] == 0:
-                        continue
-                    # add index to neighbors set
-                    if array_3d[gene_row][TE][classification] > 0:
-                        neighbors.add(gene_row)
-                        # if A in B, add A to B neighbors
-                        self.gene_obj[gene_row].neighbors.add(gene_pos)
-
-        return neighbors
+            for classification in range(len(classifications)):
+                # create edge between gene A and gene B if they both pass threshold
+                if array_3d[curr_gene][TE][classification] >= self.threshold and \
+                        array_3d[compare_gene][TE][classification] >= self.threshold:
+                    self.gene_obj[curr_gene].neighbors.add(compare_gene)
+                    self.gene_obj[compare_gene].neighbors.add(curr_gene)
 
     def disjointSet(self):
         # create instance of disjoint set class
