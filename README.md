@@ -1,2 +1,3 @@
-# graphiTE
-graph connectivity for gene driven by TE insertions
+# GraphiTE
+## UCSC, Daniel Kim Lab - Tool for exploring gene connectivity driven by repeat element insertions
+
