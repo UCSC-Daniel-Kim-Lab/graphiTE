@@ -5,14 +5,16 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-i', '--csv_file')
-parser.add_argument('-t', '--threshold')
+parser.add_argument('-t', '--threshold', default=1)
 parser.add_argument('-o', '--output_file')
+parser.add_argument('-p', '--prints', default=250)
 
 args = parser.parse_args()
 
 csvFile = args.csv_file
-threshold = args.threshold
+threshold = int(args.threshold)
 outFile = args.output_file
+verbosity = int(args.prints)
 
 # load csv file in df
 data = pd.read_csv(csvFile)
@@ -47,11 +49,12 @@ class Graph:
         # iterate through list of gene nodes by index
         size = len(self.gene_obj)
         for curr_gene in range(size):
-            if curr_gene % int((.1 * size)) == 0:
-                print("Compared {} genes".format(curr_gene))
+            if curr_gene % verbosity == 0:
+                print("Connected {} genes".format(curr_gene))
             # find the gene at index i
             for compare_gene in range(curr_gene, size):
                 self.compare(curr_gene, compare_gene)
+        print("Completed Graph Generation")
 
     def compare(self, curr_gene, compare_gene):
         """ compare node to every other node"""
@@ -70,24 +73,29 @@ class Graph:
         # iterate over indexes of genes
         for gene in range(len(self.gene_obj)):
             # call union_find on gene index, and neighbor indexes
+            if (gene%verbosity==0): print("Compared {} genes".format(gene))
             for neighbor in self.gene_obj[gene].neighbors:
                 self.disjoint.union(gene, neighbor)
+        print("Finished Finding Connections")
 
     def createParentSets(self):
         # [roots] rep all gene_obj
         # node @ graph.gene_obj[0] has parent at index roots[0]
-        self.subsets = [set() for _ in range(len(self.gene_obj))]
+        print("Formatting Output")
+        parents = {parent: index for index, parent in enumerate(set(self.disjoint.roots))} # pull true roots
+        print("{} Distinct Sets Found".format(len(parents.keys())))
 
-        # add all children of a parent node to the subset list @ the parent nodes index
-        for i in range(len(self.disjoint.roots)):
-            self.subsets[self.disjoint.roots[i]].add(i)
+        self.subsets = [[] for _ in parents.keys()] # def one set for each true root
+        for node in range(len(self.disjoint.roots)): # add each node to the set for its root
+            self.subsets[parents[self.disjoint.roots[node]]].append(node)
+        self.subsets.sort(key=lambda s: len(s), reverse=True)
 
     def print(self, fileName):
         """ write output to txt file """
-        file = open(fileName, 'w')
-        for parent in range(len(self.subsets)):
-            neighborhood = self.subsets[parent]
-            file.write("{} \t {} \t {} \n".format(parent, neighborhood, len(neighborhood)))
+        with open(fileName, 'w') as file:
+            print("\t".join([str(len(subset)) for subset in self.subsets]), file=file)
+            for i in range(max([len(subset) for subset in self.subsets])):
+                print("\t".join([str(subset[i]) if i < len(subset) else " " for subset in self.subsets]), file=file)
 
 class Gene:
 
@@ -112,9 +120,9 @@ class disjointSets:
 
     def find(self, node):
         # find parent root
-        if node != self.roots[node]:
-            self.roots[node] = self.find(self.roots[node])
-            return self.roots[node]
+        while node != self.roots[node]:
+            self.roots[node] = self.roots[self.roots[node]]
+            node = self.roots[node]
         return node
 
     def union(self, left_index, right_index):
@@ -139,25 +147,13 @@ def main():
     graph = Graph()
 
     # create gene nodes for each gene and add to Graph object
-    for gene_index in range(len(genes)):
-        node = Gene(genes[gene_index])
-        graph.add_node(node)
+    for gene in genes:
+        graph.add_node(Gene(gene))
 
     # compare nodes
-    graph.compareAll()
-
-    graph.disjointSet()
-    graph.createParentSets()
-    graph.print(outFile)
+    graph.compareAll() # Create Graph
+    graph.disjointSet() # Init Sets
+    graph.createParentSets() # Find Connectivity
+    graph.print(outFile) # Print Results
 
 main()
-
-
-
-
-
-
-
-
-
-
