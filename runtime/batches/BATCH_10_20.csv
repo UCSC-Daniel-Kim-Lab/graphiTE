@@ -1,0 +1,11 @@
+name,name2,chrom,genoStrand,genoLength,repName,repStart,repLength,repFamily,repClass,repStrand,classification,len_classification,completeSeq
+ENST00000643927.1,PRKCB,chr16,+,384629,MIR,24037288,68,MIR,SINE,-,Intron,68,MIR_range=chr16:24037288-24037356_strand=-
+ENST00000364407.1,Y_RNA,chr5,-,101,(CTTT)n,173254162,28,Simple_repeat,Simple_repeat,+,Transcription_End_Site,173254189,(CTTT)n_range=chr5:173254162-173254190_strand=+
+ENST00000624210.3,ARHGEF9,chrX,-,117239,MIR,63737917,205,MIR,SINE,-,Intron,205,MIR_range=chrX:63737917-63738122_strand=-
+ENST00000618123.4,CNOT6,chr5,+,83843,Charlie17a,180497411,79,hAT-Charlie,DNA,-,Intron,79,Charlie17a_range=chr5:180497411-180497490_strand=-
+ENST00000681712.1,CANX,chr5,+,52963,AluSx,179710140,285,Alu,SINE,+,Intron,285,AluSx_range=chr5:179710140-179710425_strand=+
+ENST00000683782.1,TAF1,chrX,+,99645,(CCCCTCT)n,71366186,46,Simple_repeat,Simple_repeat,+,Promoter_Region,46,(CCCCTCT)n_range=chrX:71366186-71366232_strand=+
+ENST00000383229.8,CEP63,chr3,+,78975,MER46C,134560114,175,TcMar-Tigger,DNA,+,Intron,175,MER46C_range=chr3:134560114-134560289_strand=+
+ENST00000638985.1,FTX,chrX,-,162286,AluJo,74266250,261,Alu,SINE,-,Intron,261,AluJo_range=chrX:74266250-74266511_strand=-
+ENST00000324682.5,PPP1R42,chr8,-,40421,MER44B,67007298,91,TcMar-Tigger,DNA,+,Intron,91,MER44B_range=chr8:67007298-67007389_strand=+
+ENST00000515064.5,LDB2,chr4,-,397022,MIR,16521961,209,MIR,SINE,+,Intron,209,MIR_range=chr4:16521961-16522170_strand=+
